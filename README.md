@@ -70,29 +70,41 @@ This repository contains the full stack for cross-platform mobile development wi
 
 ```text
 studysketch-ai/
-├─ android/                 # Android-specific project (Gradle, Kotlin)
-│  ├─ app/                  # Android app module 
-│  └─ build.gradle          # Configured for Arm ABI splits
-├─ ios/                     # iOS-specific project (Xcode, Swift)
-│  ├─ StudySketchAI/        # SwiftUI App
-│  ├─ MLModels/             # Converted .mlmodel files
-│  └─ build_ios.sh          # Script to build iOS Core ML modules
-├─ app/
-│  ├─ lib/                  # Flutter/React UI code (Shared)
-│  └─ native_inference/     # Swift + Kotlin wrappers for inference
-├─ models/                  # Optimized models
-│  ├─ coreml_summarizer/    # Core ML quantized transformer
-│  ├─ quantized_summarizer/ # TFLite / ONNX quantized model
-│  └─ graph_generator/      # Model for diagram generation
-├─ tools/                   # Python pipelines
-│  ├─ convert_model.py      # PyTorch -> Core ML / TFLite converter
-│  ├─ ocr_pipeline.py       # OCR preprocessing logic
-│  └─ sample_notebooks/     
-├─ scripts/                 
-│  ├─ build_android.sh      # Builds Android native inference lib
-│  └─ package_models.sh     # Packages models for release
-├─ README.md
-└─ LICENSE                  
+├── android/                 # Android-specific project
+│   ├── app/
+│   │   └── build.gradle
+│   └── build.gradle
+├── ios/                     # iOS-specific project
+│   ├── StudySketchAI/
+│   │   └── App.swift
+│   ├── MLModels/
+│   │   └── README.md
+│   └── build_ios.sh
+├── app/
+│   ├── lib/
+│   │   └── main.dart        # Flutter Entry Point
+│   └── native_inference/
+│       ├── android/
+│       │   └── Bridge.kt
+│       └── ios/
+│           └── Bridge.swift
+├── models/                  # Optimized models
+│   ├── coreml_summarizer/
+│   │   └── README.md
+│   ├── quantized_summarizer/
+│   │   └── README.md
+│   └── graph_generator/
+│       └── README.md
+├── tools/                   # Python pipelines
+│   ├── convert_model.py
+│   ├── ocr_pipeline.py
+│   └── sample_notebooks/
+│       └── README.md
+├── scripts/                 
+│   ├── build_android.sh
+│   └── package_models.sh
+├── README.md
+└── LICENSE                  
 ```
 
 ---
@@ -177,7 +189,7 @@ if __name__ == "__main__":
 </details>
 
 <details>
-<summary><strong>🍎 scripts/build_ios.sh (iOS Builder)</strong></summary>
+<summary><strong>🍎 ios/build_ios.sh (iOS Builder)</strong></summary>
 
 Automate the build process for iOS, ensuring all architecture flags are set for Arm64.
 
