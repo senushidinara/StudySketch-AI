@@ -1,11 +1,18 @@
 # 🎨 StudySketch AI
 
-> **Turn your notes into diagrams, mind-maps & study aides (On-Device, Arm Optimized).**
-> Upload PDFs, images, or raw text and instantly convert them into interactive Mind Maps, Org Charts, Gantt Charts, and more—private, fast, and local.
+> **StudySketch AI transforms dense notes into interactive mind-maps, flowcharts, and flashcards — all offline on your device.**
 
 ![StudySketch Banner](https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=2574&auto=format&fit=crop)
 
-StudySketch AI is a mobile-first application designed to transform long, unstructured study material into hierarchical diagrams and visual summaries. It is engineered for **Arm-based mobile devices**, leveraging **NPU acceleration**, **Quantized Models**, and **Edge Inference** to ensure privacy and low latency.
+Upload a PDF, DOCX, or image. The app runs smart OCR, extracts headings, bullets, tables, and key insights, then automatically builds a dynamic mind-map. Every node is **editable, mergeable, and customizable**, so you can reorganize ideas instantly.
+
+**Generate flashcards with a single click** — the app produces smart Q&A cards ready for Anki or CSV export. Summaries, highlights, and diagrams are fully automated and interactive.
+
+All of this runs **on-device** using Arm-optimized models, Core ML on Apple Silicon, and quantized transformer pipelines. Heavy computations are accelerated via NEON SIMD, CPU/GPU/NPU delegates, and hardware-optimized runtimes, delivering fast, smooth, and energy-efficient performance without sending data to the cloud.
+
+Developers can rebuild or update models using included conversion scripts and native runtime modules, ensuring the AI always runs efficiently on Arm phones, tablets, and Apple devices.
+
+**StudySketch AI makes unstructured notes visual, actionable, and easy to study, helping users understand and revise faster — instantly, securely, and efficiently on Arm devices.**
 
 ---
 

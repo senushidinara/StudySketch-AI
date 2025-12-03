@@ -19,10 +19,17 @@ export interface Message {
   timestamp: number;
 }
 
+export interface Flashcard {
+  id: string;
+  front: string;
+  back: string;
+}
+
 export interface GeneratedContent {
   diagramCode: string;
   summary: string;
   diagramType: DiagramType;
+  flashcards: Flashcard[];
 }
 
 export interface FileData {

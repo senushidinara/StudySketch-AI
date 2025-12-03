@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { DiagramType, GeneratedContent, FileData, Message } from '../types';
+import { DiagramType, GeneratedContent, FileData, Message, Flashcard } from '../types';
 
 const apiKey = process.env.API_KEY || '';
 const ai = new GoogleGenAI({ apiKey });
@@ -40,9 +40,10 @@ export const generateDiagramAndSummary = async (
   }
 
   const prompt = `
-    Analyze the provided content (text or document) and perform two tasks:
+    Analyze the provided content (text or document) and perform three tasks:
     1. Create a concise summary of the key concepts (max 300 words).
     2. Generate a Mermaid.js diagram code block that visually represents the information.
+    3. Create 5-10 study flashcards (Question and Answer pairs) based on the most important facts.
     
     The diagram type must be: ${type}.
     
@@ -62,7 +63,11 @@ export const generateDiagramAndSummary = async (
     Output Format (JSON):
     {
       "summary": "The markdown summary here...",
-      "diagramCode": "The mermaid code here..."
+      "diagramCode": "The mermaid code here...",
+      "flashcards": [
+        { "front": "Question 1?", "back": "Answer 1" },
+        { "front": "Question 2?", "back": "Answer 2" }
+      ]
     }
     
     IMPORTANT: Return ONLY valid JSON. Ensure the mermaid code is syntactically correct and escapes characters properly. Do not include markdown formatting outside the JSON string.
@@ -91,10 +96,18 @@ export const generateDiagramAndSummary = async (
       json = JSON.parse(cleanText);
     }
 
+    // Map flashcards with IDs
+    const flashcards: Flashcard[] = (json.flashcards || []).map((card: any, index: number) => ({
+      id: `fc-${Date.now()}-${index}`,
+      front: card.front || "Question",
+      back: card.back || "Answer"
+    }));
+
     return {
       summary: json.summary || "Could not generate summary.",
       diagramCode: json.diagramCode || "",
-      diagramType: type
+      diagramType: type,
+      flashcards: flashcards
     };
   } catch (error) {
     console.error("Gemini API Error:", error);

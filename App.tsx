@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BrainCircuit, 
   Layout, 
@@ -15,7 +15,12 @@ import {
   Zap,
   Smartphone,
   Info,
-  X
+  X,
+  Layers,
+  Edit2,
+  Save,
+  Download,
+  RotateCw
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -80,10 +85,23 @@ const App: React.FC = () => {
   const [processingState, setProcessingState] = useState<ProcessingState>({ status: 'idle' });
   const [content, setContent] = useState<GeneratedContent | null>(null);
   
+  // Editable Diagram State
+  const [currentDiagramCode, setCurrentDiagramCode] = useState<string>('');
+  const [isEditingDiagram, setIsEditingDiagram] = useState(false);
+  
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'diagram' | 'summary'>('diagram');
+  const [activeTab, setActiveTab] = useState<'diagram' | 'summary' | 'flashcards'>('diagram');
   const [showDocs, setShowDocs] = useState(false);
+  
+  // Flashcard Flip State
+  const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (content?.diagramCode) {
+      setCurrentDiagramCode(content.diagramCode);
+    }
+  }, [content]);
 
   // Handlers
   const handleGenerate = async () => {
@@ -94,11 +112,13 @@ const App: React.FC = () => {
 
     setProcessingState({ status: 'processing', message: 'Analyzing content & generating visualization...' });
     setChatMessages([]); 
+    setIsEditingDiagram(false);
     
     try {
       const result = await generateDiagramAndSummary(inputText, selectedFile, selectedType);
       setContent(result);
       setProcessingState({ status: 'completed' });
+      setActiveTab('diagram');
     } catch (error) {
       setProcessingState({ status: 'error', message: 'Failed to generate content. Please try again.' });
       console.error(error);
@@ -145,6 +165,28 @@ const App: React.FC = () => {
       setIsChatLoading(false);
     }
   };
+  
+  const toggleCardFlip = (id: string) => {
+    setFlippedCards(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+  
+  const exportFlashcards = () => {
+    if (!content?.flashcards) return;
+    
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + content.flashcards.map(card => `"${card.front.replace(/"/g, '""')}","${card.back.replace(/"/g, '""')}"`).join("\n");
+      
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "studysketch_flashcards.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const diagramTypes = [
     { id: DiagramType.MINDMAP, label: 'Mind Map', icon: BrainCircuit },
@@ -181,7 +223,7 @@ const App: React.FC = () => {
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
-          {/* Arm Optimization Dashboard (Visible for Demo) */}
+          {/* Arm Optimization Dashboard */}
           <div className="bg-slate-900 rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
              <div className="absolute top-0 right-0 p-2 opacity-10">
                <Cpu size={80} />
@@ -325,20 +367,99 @@ const App: React.FC = () => {
                  >
                    <BookOpen size={16} /> Summary
                  </button>
+                 <button 
+                  onClick={() => setActiveTab('flashcards')}
+                  className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${activeTab === 'flashcards' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                 >
+                   <Layers size={16} /> Flashcards
+                 </button>
                </div>
 
                <div className="flex-1 relative overflow-hidden bg-slate-50/50">
+                 
+                 {/* Diagram Tab */}
                  {activeTab === 'diagram' && content && (
-                   <div className="absolute inset-0 p-4">
-                      <MermaidDiagram code={content.diagramCode} />
+                   <div className="absolute inset-0 flex flex-col">
+                      <div className="absolute top-4 left-4 z-10">
+                        <button 
+                          onClick={() => setIsEditingDiagram(!isEditingDiagram)}
+                          className={`
+                            flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium shadow-sm border transition-all
+                            ${isEditingDiagram ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}
+                          `}
+                        >
+                           {isEditingDiagram ? <><Save size={14}/> View</> : <><Edit2 size={14}/> Edit Code</>}
+                        </button>
+                      </div>
+                      
+                      {isEditingDiagram ? (
+                        <div className="w-full h-full p-4 pt-16">
+                           <textarea
+                             value={currentDiagramCode}
+                             onChange={(e) => setCurrentDiagramCode(e.target.value)}
+                             className="w-full h-full p-4 font-mono text-sm bg-slate-900 text-slate-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           />
+                        </div>
+                      ) : (
+                        <div className="w-full h-full p-4">
+                           <MermaidDiagram code={currentDiagramCode} />
+                        </div>
+                      )}
                    </div>
                  )}
+
+                 {/* Summary Tab */}
                  {activeTab === 'summary' && content && (
                    <div className="absolute inset-0 p-8 overflow-y-auto">
                      <article className="prose prose-slate prose-headings:text-indigo-900 prose-a:text-indigo-600 max-w-none">
                        <ReactMarkdown>{content.summary}</ReactMarkdown>
                      </article>
                    </div>
+                 )}
+
+                 {/* Flashcards Tab */}
+                 {activeTab === 'flashcards' && content && content.flashcards && (
+                    <div className="absolute inset-0 flex flex-col">
+                      <div className="p-4 border-b border-slate-100 bg-white flex justify-between items-center">
+                        <h3 className="font-semibold text-slate-700">Study Cards ({content.flashcards.length})</h3>
+                        <button 
+                          onClick={exportFlashcards}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          <Download size={14} /> Export CSV (Anki)
+                        </button>
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {content.flashcards.map((card) => (
+                            <div 
+                              key={card.id}
+                              onClick={() => toggleCardFlip(card.id)}
+                              className="relative h-64 w-full perspective-1000 cursor-pointer group"
+                            >
+                              <div className={`
+                                relative w-full h-full transition-transform duration-500 transform-style-3d
+                                ${flippedCards[card.id] ? 'rotate-y-180' : ''}
+                              `}>
+                                {/* Front */}
+                                <div className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col items-center justify-center backface-hidden group-hover:shadow-md transition-shadow">
+                                  <span className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-4">Question</span>
+                                  <p className="text-center font-medium text-slate-800">{card.front}</p>
+                                  <div className="absolute bottom-4 text-slate-400">
+                                    <RotateCw size={16} />
+                                  </div>
+                                </div>
+                                {/* Back */}
+                                <div className="absolute inset-0 w-full h-full bg-indigo-600 rounded-2xl shadow-sm p-6 flex flex-col items-center justify-center backface-hidden rotate-y-180 text-white">
+                                  <span className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-4">Answer</span>
+                                  <p className="text-center font-medium">{card.back}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                  )}
                </div>
              </div>
